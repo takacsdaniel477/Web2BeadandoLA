@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Feltalálók - KVÍZ</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 20px auto; 
+            text-align: center;
+            line-height: 1.6; 
+        }
+        .question-card {
+            background-color: #f4f4f4;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .answer-btn {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .answer-btn:hover {
+            background-color: #45a049;
+        }
+        #pontszam {
+            font-size: 24px;
+            color: #333;
+            margin: 20px 0;
+        }
+        .correct { background-color: #4CAF50 !important; }
+        .incorrect { background-color: #f44336 !important; }
+    </style>
+</head>
+<body>
+    <h1>🧠 Feltalálók - KVÍZ</h1>
+    <div id="pontszam">Pontszám: 0</div>
+    <div id="kviz-tabla"></div>
+
+    <script>
+    class Feltalalo {
+        constructor(nev, helyes_valasz, hibas_valaszok) {
+            this.nev = nev;
+            this.helyes_valasz = helyes_valasz;
+            this.hibas_valaszok = hibas_valaszok;
+        }
+
+        valaszok_keverese() {
+            const osszes_valasz = [...this.hibas_valaszok, this.helyes_valasz];
+            return osszes_valasz.sort(() => Math.random() - 0.5);
+        }
+    }
+
+    class FeltalaloKviz {
+        constructor() {
+            this.feltalalok = [
+                new Feltalalo(
+                    "Bánki Donát", 
+                    "Négyütemű belső égésű motor", 
+                    ["Telefon", "Rádió", "Háromdimenziós kijelző"]
+                ),
+                new Feltalalo(
+                    "Bárczy Pál", 
+                    "Űrkemence", 
+                    ["Repülőgép", "Szakadásiszög-mérő", "Villanyóra"]
+                ),
+                new Feltalalo(
+                    "Bródy Imre", 
+                    "Kriptonlámpa", 
+                    ["Elektronmikroszkóp", "Elektromos gitár", "Atomreaktor"]
+                )
+            ];
+            this.jelenlegi_kerdes_index = 0;
+            this.pontszam = 0;
+        }
+
+        jatek_inditasa() {
+            this.jelenlegi_kerdes_index = 0;
+            this.pontszam = 0;
+            this.kerdes_megjelenites();
+        }
+
+        kerdes_megjelenites() {
+            const tabla = document.getElementById('kviz-tabla');
+            const pontszam_megjelenitese = document.getElementById('pontszam');
+            pontszam_megjelenitese.textContent = `Pontszám: ${this.pontszam}`;
+
+            if (this.jelenlegi_kerdes_index >= this.feltalalok.length) {
+                tabla.innerHTML = `
+                    <div class="question-card">
+                        <h2>Játék vége! 🏆</h2>
+                        <p>Végső pontszámod: ${this.pontszam} / ${this.feltalalok.length}</p>
+                        <button onclick="kviz.jatek_inditasa()" class="answer-btn">Újra játszom</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const jelenlegi_feltalalo = this.feltalalok[this.jelenlegi_kerdes_index];
+            const kevert_valaszok = jelenlegi_feltalalo.valaszok_keverese();
+
+            tabla.innerHTML = `
+                <div class="question-card">
+                    <h2>${jelenlegi_feltalalo.nev}</h2>
+                    <p>Mit talált fel?</p>
+                    ${kevert_valaszok.map((valasz, index) => `
+                        <button 
+                            onclick="kviz.valasz_ellenorzese('${valasz}')" 
+                            class="answer-btn"
+                        >
+                            ${valasz}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        valasz_ellenorzese(kivalasztott_valasz) {
+            const jelenlegi_feltalalo = this.feltalalok[this.jelenlegi_kerdes_index];
+            const gombok = document.querySelectorAll('.answer-btn');
+            
+            gombok.forEach(gomb => {
+                gomb.disabled = true;
+                if (gomb.textContent === jelenlegi_feltalalo.helyes_valasz) {
+                    gomb.classList.add('correct');
+                }
+                if (gomb.textContent === kivalasztott_valasz && kivalasztott_valasz !== jelenlegi_feltalalo.helyes_valasz) {
+                    gomb.classList.add('incorrect');
+                }
+            });
+
+            if (kivalasztott_valasz === jelenlegi_feltalalo.helyes_valasz) {
+                this.pontszam++;
+            }
+
+            setTimeout(() => {
+                this.jelenlegi_kerdes_index++;
+                this.kerdes_megjelenites();
+            }, 500);
+        }
+    }
+
+    const kviz = new FeltalaloKviz();
+    kviz.jatek_inditasa();
+    </script>
+</body>
+</html>
